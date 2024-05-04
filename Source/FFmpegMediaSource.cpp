@@ -928,7 +928,7 @@ namespace winrt::FFmpegInteropX::implementation
 
         // Find the video stream and its decoder
         auto avVideoCodec = avcodec_find_decoder(avStream->codecpar->codec_id);
-
+        
         if (avVideoCodec)
         {
             auto tryAv1hw = avVideoCodec->id == AVCodecID::AV_CODEC_ID_AV1 && std::string(avVideoCodec->name) != "av1" && config->VideoDecoderMode() == VideoDecoderMode::Automatic;

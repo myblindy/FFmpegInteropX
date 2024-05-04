@@ -206,7 +206,8 @@ void MediaSampleProvider::InitializeStreamInfo()
         auto pixelAspect = (double)streamDescriptor.EncodingProperties().PixelAspectRatio().Numerator() / streamDescriptor.EncodingProperties().PixelAspectRatio().Denominator();
         auto videoAspect = ((double)m_pAvCodecCtx->width / m_pAvCodecCtx->height) / pixelAspect;
         auto bitsPerSample = max(m_pAvStream->codecpar->bits_per_raw_sample, m_pAvStream->codecpar->bits_per_coded_sample);
-        auto framesPerSecond = m_pAvStream->avg_frame_rate.num > 0 && m_pAvStream->avg_frame_rate.den > 0 ? av_q2d(m_pAvStream->avg_frame_rate) : 0.0;
+        //auto framesPerSecond = m_pAvStream->avg_frame_rate.num > 0 && m_pAvStream->avg_frame_rate.den > 0 ? av_q2d(m_pAvStream->avg_frame_rate) : 0.0;
+        auto framesPerSecond = m_pAvStream->r_frame_rate.num > 0 && m_pAvStream->r_frame_rate.den > 0 ? av_q2d(m_pAvStream->r_frame_rate) : 0.0;
 
         streamInfo = VideoStreamInfo(Name, Language, CodecName, (StreamDisposition)m_pAvStream->disposition, m_pAvStream->codecpar->bit_rate, false,
             m_pAvStream->codecpar->width, m_pAvStream->codecpar->height, videoAspect,
@@ -463,10 +464,10 @@ void MediaSampleProvider::SetCommonVideoEncodingProperties(VideoEncodingProperti
         videoProperties.FrameRate().Numerator(m_pAvCodecCtx->framerate.num);
         videoProperties.FrameRate().Denominator(m_pAvCodecCtx->framerate.den);
     }
-    else if (m_pAvStream->avg_frame_rate.num != 0 || m_pAvStream->avg_frame_rate.den != 0)
+    else if (m_pAvStream->r_frame_rate.num != 0 || m_pAvStream->r_frame_rate.den != 0)
     {
-        videoProperties.FrameRate().Numerator(m_pAvStream->avg_frame_rate.num);
-        videoProperties.FrameRate().Denominator(m_pAvStream->avg_frame_rate.den);
+        videoProperties.FrameRate().Numerator(m_pAvStream->r_frame_rate.num);
+        videoProperties.FrameRate().Denominator(m_pAvStream->r_frame_rate.den);
     }
 }
 
