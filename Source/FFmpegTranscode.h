@@ -92,15 +92,20 @@ namespace winrt::FFmpegInteropX::implementation
         Windows::Foundation::Collections::IVectorView<FFmpegInteropX::FFmpegTranscodeInputTrimmingMarkerEntry> TrimmingMarkers() const { return trimming_markers; }
         void TrimmingMarkers(Windows::Foundation::Collections::IVectorView<FFmpegInteropX::FFmpegTranscodeInputTrimmingMarkerEntry> const& value) { trimming_markers = value; }
 
+        hstring EncoderTitle() const { return encoder_title; }
+        void EncoderTitle(hstring const& value) { encoder_title = value; }
+
         FFmpegTranscodeInput() { }
         FFmpegTranscodeInput(hstring const& input, int const video_stream_index,
             Windows::Foundation::Collections::IVectorView<FFmpegInteropX::FFmpegTranscodeInputCropFrameEntry> crop_frames,
-            Windows::Foundation::Collections::IVectorView<FFmpegInteropX::FFmpegTranscodeInputTrimmingMarkerEntry> trimming_markers)
+            Windows::Foundation::Collections::IVectorView<FFmpegInteropX::FFmpegTranscodeInputTrimmingMarkerEntry> trimming_markers,
+            hstring const& encoder_title)
         {
             this->filename = input;
             this->video_stream_index = video_stream_index;
             this->crop_frames = crop_frames;
             this->trimming_markers = trimming_markers;
+            this->encoder_title = encoder_title;
         }
 
     private:
@@ -108,6 +113,7 @@ namespace winrt::FFmpegInteropX::implementation
         int video_stream_index = {};
         Windows::Foundation::Collections::IVectorView<FFmpegInteropX::FFmpegTranscodeInputCropFrameEntry> crop_frames;
         Windows::Foundation::Collections::IVectorView<FFmpegInteropX::FFmpegTranscodeInputTrimmingMarkerEntry> trimming_markers;
+        hstring encoder_title;
     };
 
     struct FFmpegTranscodeOutput : FFmpegTranscodeOutputT<FFmpegTranscodeOutput>
@@ -151,7 +157,7 @@ namespace winrt::FFmpegInteropX::implementation
         void throw_av_error(int ret);
         void SetEncodingParameters(AVCodecContext& ctx, FFmpegInteropX::FFmpegTranscodeOutput const& output);
 
-        int FilterWriteFrame(AVFrame& filteredFrame, int64_t skippedPts,
+        int FilterWriteFrame(AVFrame& filteredFrame, int64_t skippedPts, FFmpegInteropX::FFmpegTranscodeOutput const& output,
             AVFormatContext& outputFormatContext, AVCodecContext& outputCodecContext, AVPacket& outputPacket, bool flush);
 
         winrt::event<EventHandler<std::uint64_t>> frameOutputProgress;

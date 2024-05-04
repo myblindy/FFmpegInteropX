@@ -36,10 +36,13 @@ namespace FFmpegInteropX
         IVectorView<FFmpegTranscodeInputCropFrameEntry> CropFrames;
         IVectorView<FFmpegTranscodeInputTrimmingMarkerEntry> TrimmingMarkers;
 
+        String EncoderTitle;
+
         FFmpegTranscodeInput();
         FFmpegTranscodeInput(String fileName, Int32 videoStreamIndex,
             IVectorView<FFmpegTranscodeInputCropFrameEntry> cropFrames,
-            IVectorView<FFmpegTranscodeInputTrimmingMarkerEntry> trimmingMarkers);
+            IVectorView<FFmpegTranscodeInputTrimmingMarkerEntry> trimmingMarkers,
+            String encoderTitle);
     };
 
     enum OutputType
