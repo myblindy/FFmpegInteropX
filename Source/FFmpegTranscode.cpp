@@ -46,8 +46,11 @@ namespace winrt::FFmpegInteropX::implementation
         {
             auto inputFrameNumber = av_rescale_q(filteredFrame.pts, filteredFrame.time_base, outputCodecContext.time_base);
             auto outputFrameNumber = inputFrameNumber - skippedFrames;
+
+            // no idea, honestly, but this works
             filteredFrame.pts = av_rescale_q(outputFrameNumber,
                 av_mul_q(outputCodecContext.time_base, av_d2q(1 / output.FrameRateMultiplier(), INT_MAX)), filteredFrame.time_base);
+            filteredFrame.pts = av_rescale_q(filteredFrame.pts, filteredFrame.time_base, outputFormatContext.streams[0]->time_base);
         }
 
         auto ret = avcodec_send_frame(&outputCodecContext, flush ? nullptr : &filteredFrame);
