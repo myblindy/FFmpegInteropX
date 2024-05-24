@@ -289,8 +289,10 @@ namespace winrt::FFmpegInteropX::implementation
         int64_t inputFrameNumber = 0, outputFrameNumber = 0;
         int64_t skippedFrames = 0;
 
+        auto flushing = false;
+
         // transcode
-        while (true)
+        while (!flushing)
         {
             // end?
             if (nextTrimmingMarkerIt == trimmingMarkers.end() && (*trimmingMarkerIt).TrimAfter())
@@ -321,6 +323,7 @@ namespace winrt::FFmpegInteropX::implementation
 
             if (inputPacket->stream_index == input.VideoStreamIndex())
             {
+            process_flushed_frames:
                 while (ret >= 0)
                 {
                     ret = avcodec_receive_frame(&*inputCodecContext, &*inputFrame);
@@ -389,26 +392,21 @@ namespace winrt::FFmpegInteropX::implementation
                     if (ret < 0)
                         check_av_result(ret);
                 }
-
             }
 
             av_packet_unref(&*inputPacket);
         }
 
-        // flush stuff
-        if (av_buffersrc_add_frame_flags(buffersrc_ctx, nullptr, 0) >= 0)
+        if (!flushing)
         {
-            while (1)
-            {
-                ret = av_buffersink_get_frame(buffersink_ctx, &*filteredFrame);
-                if (ret < 0)
-                    break;
-
-                filteredFrame->pict_type = AV_PICTURE_TYPE_NONE;
-                if (FilterWriteFrame(*filteredFrame, skippedFrames, output, *outputFormatContext, *outputCodecContext, *outputPacket, true) < 0)
-                    break;
-            }
+            // flush stuff
+            check_av_result(avcodec_send_packet(&*inputCodecContext, nullptr));
+            flushing = true;
+            goto process_flushed_frames;
         }
+
+        // flush the filter graph
+        check_av_result(FilterWriteFrame(*filteredFrame, skippedFrames, output, *outputFormatContext, *outputCodecContext, *outputPacket, true));
 
         check_av_result(av_write_trailer(&*outputFormatContext));
         check_av_result(avio_closep(&outputFormatContext->pb));
